@@ -4,6 +4,7 @@ import type { WizardPrompter } from "../wizard/prompts.js";
 import { buildWorkspaceHookStatus } from "../hooks/hooks-status.js";
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { formatCliCommand } from "../cli/command-format.js";
+import { t } from "../wizard/i18n.js";
 
 export async function setupInternalHooks(
   cfg: OpenClawConfig,
@@ -29,16 +30,16 @@ export async function setupInternalHooks(
 
   if (eligibleHooks.length === 0) {
     await prompter.note(
-      "No eligible hooks found. You can configure hooks later in your config.",
+      t("prompts.noHooks"),
       "No Hooks Available",
     );
     return cfg;
   }
 
   const toEnable = await prompter.multiselect({
-    message: "Enable hooks?",
+    message: t("prompts.enableHooks"),
     options: [
-      { value: "__skip__", label: "Skip for now" },
+      { value: "__skip__", label: t("prompts.skipForNow") },
       ...eligibleHooks.map((hook) => ({
         value: hook.name,
         label: `${hook.emoji ?? "🔗"} ${hook.name}`,
@@ -71,7 +72,10 @@ export async function setupInternalHooks(
 
   await prompter.note(
     [
-      `Enabled ${selected.length} hook${selected.length > 1 ? "s" : ""}: ${selected.join(", ")}`,
+      t("prompts.hooksConfigured", {
+        count: selected.length,
+        names: selected.join(", "),
+      }),
       "",
       "You can manage hooks later with:",
       `  ${formatCliCommand("openclaw hooks list")}`,

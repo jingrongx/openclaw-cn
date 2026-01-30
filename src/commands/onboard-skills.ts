@@ -3,6 +3,7 @@ import { buildWorkspaceSkillStatus } from "../agents/skills-status.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
+import { t } from "../wizard/i18n.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import { detectBinary, resolveNodeManagerOptions } from "./onboard-helpers.js";
 
@@ -68,7 +69,7 @@ export async function setupSkills(
   );
 
   const shouldConfigure = await prompter.confirm({
-    message: "Configure skills now? (recommended)",
+    message: t("prompts.configureSkills"),
     initialValue: true,
   });
   if (!shouldConfigure) return cfg;
@@ -97,7 +98,7 @@ export async function setupSkills(
   }
 
   const nodeManager = (await prompter.select({
-    message: "Preferred node manager for skill installs",
+    message: t("prompts.preferredNodeManager"),
     options: resolveNodeManagerOptions(),
   })) as "npm" | "pnpm" | "bun";
 
@@ -117,12 +118,12 @@ export async function setupSkills(
   );
   if (installable.length > 0) {
     const toInstall = await prompter.multiselect({
-      message: "Install missing skill dependencies",
+      message: t("prompts.installMissingSkills"),
       options: [
         {
           value: "__skip__",
-          label: "Skip for now",
-          hint: "Continue without installing dependencies",
+          label: t("prompts.skipForNow"),
+          hint: t("prompts.continueWithoutDeps"),
         },
         ...installable.map((skill) => ({
           value: skill.name,
@@ -138,19 +139,20 @@ export async function setupSkills(
       if (!target || target.install.length === 0) continue;
       const installId = target.install[0]?.id;
       if (!installId) continue;
-      const spin = prompter.progress(`Installing ${name}…`);
+      const spin = prompter.progress(t("prompts.installingSkill", { skill: name }));
       const result = await installSkill({
         workspaceDir,
         skillName: target.name,
         installId,
         config: next,
       });
+
       if (result.ok) {
-        spin.stop(`Installed ${name}`);
+        spin.stop(t("prompts.installedSkill", { skill: name }));
       } else {
         const code = result.code == null ? "" : ` (exit ${result.code})`;
         const detail = summarizeInstallFailure(result.message);
-        spin.stop(`Install failed: ${name}${code}${detail ? ` — ${detail}` : ""}`);
+        spin.stop(`${t("prompts.installFailed", { skill: name })}${code}${detail ? ` — ${detail}` : ""}`);
         if (result.stderr) runtime.log(result.stderr.trim());
         else if (result.stdout) runtime.log(result.stdout.trim());
         runtime.log(
@@ -164,13 +166,13 @@ export async function setupSkills(
   for (const skill of missing) {
     if (!skill.primaryEnv || skill.missing.env.length === 0) continue;
     const wantsKey = await prompter.confirm({
-      message: `Set ${skill.primaryEnv} for ${skill.name}?`,
+      message: t("prompts.setEnv", { skill: skill.name, env: skill.primaryEnv }),
       initialValue: false,
     });
     if (!wantsKey) continue;
     const apiKey = String(
       await prompter.text({
-        message: `Enter ${skill.primaryEnv}`,
+        message: t("prompts.enterEnv", { env: skill.primaryEnv }),
         validate: (value) => (value?.trim() ? undefined : "Required"),
       }),
     );

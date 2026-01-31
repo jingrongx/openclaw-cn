@@ -97,14 +97,20 @@ journalctl --user -u openclaw-gateway -f
 # 查看最后 50 行日志
 journalctl --user -u openclaw-gateway -n 50
 
-# 启动服务
+# 启动网关服务 (systemd)
 systemctl --user start openclaw-gateway
 
-# 停止服务
+# 停止网关服务 (systemd)
 systemctl --user stop openclaw-gateway
 
-# 重启服务
+# 重启网关服务 (systemd)
 systemctl --user restart openclaw-gateway
+
+# 查看网关状态 (systemd)
+systemctl --user status openclaw-gateway
+
+# 直接启动网关 (前台运行)
+openclaw gateway
 
 # 运行配置向导 (初始化或重新配置)
 openclaw onboard

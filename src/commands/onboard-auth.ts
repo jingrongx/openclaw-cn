@@ -20,6 +20,8 @@ export {
   applyXiaomiConfig,
   applyXiaomiProviderConfig,
   applyZaiConfig,
+  applyDeepSeekConfig,
+  applyDeepSeekProviderConfig,
 } from "./onboard-auth.config-core.js";
 export {
   applyMinimaxApiConfig,
@@ -48,10 +50,12 @@ export {
   setVercelAiGatewayApiKey,
   setXiaomiApiKey,
   setZaiApiKey,
+  setDeepSeekApiKey,
   writeOAuthCredentials,
   VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
   XIAOMI_DEFAULT_MODEL_REF,
   ZAI_DEFAULT_MODEL_REF,
+  DEEPSEEK_DEFAULT_MODEL_REF,
 } from "./onboard-auth.credentials.js";
 export {
   buildKimiCodeModelDefinition,

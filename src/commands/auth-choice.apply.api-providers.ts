@@ -30,6 +30,8 @@ import {
   applyXiaomiConfig,
   applyXiaomiProviderConfig,
   applyZaiConfig,
+  applyDeepSeekConfig,
+  applyDeepSeekProviderConfig,
   KIMI_CODE_MODEL_REF,
   MOONSHOT_DEFAULT_MODEL_REF,
   OPENROUTER_DEFAULT_MODEL_REF,
@@ -48,6 +50,8 @@ import {
   setXiaomiApiKey,
   setZaiApiKey,
   ZAI_DEFAULT_MODEL_REF,
+  DEEPSEEK_DEFAULT_MODEL_REF,
+  setDeepSeekApiKey,
 } from "./onboard-auth.js";
 import { OPENCODE_ZEN_DEFAULT_MODEL } from "./opencode-zen-model-default.js";
 
@@ -91,6 +95,8 @@ export async function applyAuthChoiceApiProviders(
       authChoice = "venice-api-key";
     } else if (params.opts.tokenProvider === "opencode") {
       authChoice = "opencode-zen";
+    } else if (params.opts.tokenProvider === "deepseek") {
+      authChoice = "deepseek-api-key";
     }
   }
 
@@ -567,6 +573,64 @@ export async function applyAuthChoiceApiProviders(
         applyDefaultConfig: applyVeniceConfig,
         applyProviderConfig: applyVeniceProviderConfig,
         noteDefault: VENICE_DEFAULT_MODEL_REF,
+        noteAgentModel,
+        prompter: params.prompter,
+      });
+      nextConfig = applied.config;
+      agentModelOverride = applied.agentModelOverride ?? agentModelOverride;
+    }
+    return { config: nextConfig, agentModelOverride };
+  }
+
+  if (authChoice === "deepseek-api-key") {
+    let hasCredential = false;
+
+    if (!hasCredential && params.opts?.token && params.opts?.tokenProvider === "deepseek") {
+      await setDeepSeekApiKey(normalizeApiKeyInput(params.opts.token), params.agentDir);
+      hasCredential = true;
+    }
+
+    if (!hasCredential) {
+      await params.prompter.note(
+        [
+          "DeepSeek models (V3, R1) via the official API.",
+          "Get your API key at: https://platform.deepseek.com/api_keys",
+        ].join("\n"),
+        "DeepSeek",
+      );
+    }
+
+    const envKey = resolveEnvApiKey("deepseek");
+    if (envKey) {
+      const useExisting = await params.prompter.confirm({
+        message: `Use existing DEEPSEEK_API_KEY (${envKey.source}, ${formatApiKeyPreview(envKey.apiKey)})?`,
+        initialValue: true,
+      });
+      if (useExisting) {
+        await setDeepSeekApiKey(envKey.apiKey, params.agentDir);
+        hasCredential = true;
+      }
+    }
+    if (!hasCredential) {
+      const key = await params.prompter.text({
+        message: "Enter DeepSeek API key",
+        validate: validateApiKeyInput,
+      });
+      await setDeepSeekApiKey(normalizeApiKeyInput(String(key)), params.agentDir);
+    }
+    nextConfig = applyAuthProfileConfig(nextConfig, {
+      profileId: "deepseek:default",
+      provider: "deepseek",
+      mode: "api_key",
+    });
+    {
+      const applied = await applyDefaultModelChoice({
+        config: nextConfig,
+        setDefaultModel: params.setDefaultModel,
+        defaultModel: DEEPSEEK_DEFAULT_MODEL_REF,
+        applyDefaultConfig: applyDeepSeekConfig,
+        applyProviderConfig: applyDeepSeekProviderConfig,
+        noteDefault: DEEPSEEK_DEFAULT_MODEL_REF,
         noteAgentModel,
         prompter: params.prompter,
       });

@@ -17,6 +17,7 @@ export type AuthChoice =
   | "kimi-code-api-key"
   | "synthetic-api-key"
   | "venice-api-key"
+  | "deepseek-api-key"
   | "codex-cli"
   | "apiKey"
   | "gemini-api-key"

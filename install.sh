@@ -1405,4 +1405,10 @@ if [[ "${OPENCLAW_INSTALL_SH_NO_RUN:-0}" != "1" ]]; then
     parse_args "$@"
     configure_verbose
     main
+
+    # Auto-run onboard unless disabled
+    if [[ "$NO_ONBOARD" != "1" ]]; then
+        echo -e "${INFO}→${NC} 正在启动 OpenClaw 配置向导..."
+        openclaw onboard
+    fi
 fi

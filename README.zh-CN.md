@@ -105,7 +105,34 @@ systemctl --user stop openclaw-gateway
 
 # 重启服务
 systemctl --user restart openclaw-gateway
+
+# 运行配置向导 (初始化或重新配置)
+openclaw onboard
 ```
+
+### 故障排除
+
+如果遇到服务无法启动、配置错误或奇怪的 bug，建议进行完整重置：
+
+**1. 运行配置向导进行重置**
+
+```bash
+openclaw onboard
+```
+
+在菜单中选择 **"配置处理方式" -> "重置 (Reset)" -> "完整重置 (配置 + 凭证 + 会话 + 工作区)"**。
+
+![重置配置](docs/assets/troubleshoot-reset.png)
+
+这将清除所有本地状态，让你从头开始。
+
+**2. 重新安装服务**
+
+如果问题依旧，可以在向导中选择 **"服务管理" -> "重新安装 (Reinstall)"**。
+
+![重新安装服务](docs/assets/troubleshoot-reinstall.png)
+
+这将重新注册 systemd 服务，解决潜在的权限或路径问题。
 
 > **WSL 用户注意**：
 > 如果在 WSL 中遇到 `systemctl` 相关错误（如 System has not been booted with systemd as init system），可能是您的 WSL 版本或配置未启用 systemd。
